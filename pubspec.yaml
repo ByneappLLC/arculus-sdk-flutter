@@ -1,0 +1,40 @@
+name: arculus_sdk_flutter
+description: "A new Flutter plugin project."
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: ^3.5.4
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+  flutter_nfc_kit: ^3.6.0-rc.6
+  ffi: ^2.1.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  ffigen: ^16.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.byneapp.arculus_sdk_flutter
+        pluginClass: ArculusSdkFlutterPlugin
+      ios:
+        pluginClass: ArculusSdkFlutterPlugin
+
+ffigen:
+  name: Arculus
+  description: Bindings for Arculus.
+  output: 'lib/generated_bindings.dart'
+  headers:
+    entry-points:
+      - 'include/csdk.h'
+      - 'include/csdk_types.h'
+
