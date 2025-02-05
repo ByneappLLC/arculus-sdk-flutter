@@ -24,7 +24,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  arculus_sdk_flutter: 0cce6a74139ca5c8f9d254d73e43956ca82f6d9d
+  arculus_sdk_flutter: bbc3145dc40f6e9d9347f0292828ca2e2223c1bc
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_nfc_kit: 3985c93f749b9cb4747479205c2f10bd2f877a11
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
