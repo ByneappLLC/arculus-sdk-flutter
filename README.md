@@ -12,22 +12,26 @@ A Flutter plugin for integrating with Arculus hardware wallets using direct FFI 
 
 ## Architecture
 
-This plugin uses **FFI (Foreign Function Interface)** to directly call the Arculus C SDK (`libcsdk`), eliminating the need for platform channels and providing:
+This plugin uses **FFI (Foreign Function Interface)** to directly call the Arculus C SDK (`libcsdk`) combined with **flutter_nfc_kit** for NFC communication, providing:
 
 - 🚀 **Better Performance**: No serialization overhead or platform channel latency
-- 🔧 **Simplified Maintenance**: Single codebase instead of platform-specific implementations
+- 🔧 **Real NFC Communication**: Uses flutter_nfc_kit for actual hardware wallet communication
 - 🌐 **Universal Compatibility**: Same code works across all Flutter platforms
 - 🎯 **Type Safety**: Compile-time checking of C API usage
 
-### Before (Platform Channels)
+### Communication Flow
 ```
-Dart → Method Channel → Kotlin/Swift → JNI/Native → C SDK
+Dart → FFI → C SDK → NFC Commands → flutter_nfc_kit → Hardware Wallet
 ```
 
-### After (FFI)
-```
-Dart → FFI → C SDK
-```
+### NFC Implementation
+The plugin now uses `flutter_nfc_kit` for real NFC communication with Arculus hardware wallets, implementing the complete CSDK flow:
+1. Start NFC polling session
+2. Select wallet AID 
+3. Initialize encrypted session
+4. Execute wallet operations via NFC
+5. Process responses through CSDK
+6. End NFC session
 
 ## Installation
 

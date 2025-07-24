@@ -10,10 +10,10 @@
         "convert",
         "ffi",
         "flutter",
+        "flutter_nfc_kit",
         "freezed",
         "freezed_annotation",
         "json_annotation",
-        "nfc_manager",
         "path"
       ],
       "devDependencies": [
@@ -127,14 +127,6 @@
         "test_api",
         "vector_math",
         "vm_service"
-      ]
-    },
-    {
-      "name": "nfc_manager",
-      "version": "4.0.2",
-      "dependencies": [
-        "flutter",
-        "ndef_record"
       ]
     },
     {
@@ -725,13 +717,6 @@
       ]
     },
     {
-      "name": "ndef_record",
-      "version": "1.2.1",
-      "dependencies": [
-        "collection"
-      ]
-    },
-    {
       "name": "typed_data",
       "version": "1.4.0",
       "dependencies": [
@@ -794,6 +779,52 @@
     {
       "name": "fixnum",
       "version": "1.1.1",
+      "dependencies": []
+    },
+    {
+      "name": "flutter_nfc_kit",
+      "version": "3.6.0",
+      "dependencies": [
+        "convert",
+        "flutter",
+        "flutter_web_plugins",
+        "json_annotation",
+        "logging",
+        "ndef"
+      ]
+    },
+    {
+      "name": "flutter_web_plugins",
+      "version": "0.0.0",
+      "dependencies": [
+        "characters",
+        "collection",
+        "flutter",
+        "material_color_utilities",
+        "meta",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "ndef",
+      "version": "0.3.4",
+      "dependencies": [
+        "uuid"
+      ]
+    },
+    {
+      "name": "uuid",
+      "version": "4.5.1",
+      "dependencies": [
+        "crypto",
+        "fixnum",
+        "meta",
+        "sprintf"
+      ]
+    },
+    {
+      "name": "sprintf",
+      "version": "7.0.0",
       "dependencies": []
     }
   ],

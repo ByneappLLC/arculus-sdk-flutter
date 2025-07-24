@@ -222,8 +222,21 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_nfc_kit:
+    dependency: "direct main"
+    description:
+      name: flutter_nfc_kit
+      sha256: "3cc4059626fa672031261512299458dd274de4ccb57a7f0ee0951ddd70a048e5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.6.0"
   flutter_test:
     dependency: "direct dev"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -387,22 +400,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  ndef_record:
+  ndef:
     dependency: transitive
     description:
-      name: ndef_record
-      sha256: "0c72dfac0d5c16fc264846d103ee5d8249cd3858261a5a537b455a24c1bd5857"
+      name: ndef
+      sha256: "5083507cff4bb823b2a198a27ea2c70c4d6bc27a97b66097d966a250e1615d54"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
-  nfc_manager:
-    dependency: "direct main"
-    description:
-      name: nfc_manager
-      sha256: "164cc0223dee528d4d05a542da921f0b3a31ca0312400701c93ebf4ce757f676"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.2"
+    version: "0.3.4"
   package_config:
     dependency: transitive
     description:
@@ -496,6 +501,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.1"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      sha256: "1fc9ffe69d4df602376b52949af107d8f5703b77cda567c4d7d86a0693120f23"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0"
   stack_trace:
     dependency: transitive
     description:
@@ -560,6 +573,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  uuid:
+    dependency: transitive
+    description:
+      name: uuid
+      sha256: a5be9ef6618a7ac1e964353ef476418026db906c4facdedaa299b7a2e71690ff
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.5.1"
   vector_math:
     dependency: transitive
     description:
@@ -626,4 +647,4 @@ packages:
     version: "2.2.2"
 sdks:
   dart: ">=3.8.0 <4.0.0"
-  flutter: ">=3.18.0-18.0.pre.54"
+  flutter: ">=3.24.0"

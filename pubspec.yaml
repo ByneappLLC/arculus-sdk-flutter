@@ -17,7 +17,7 @@ dependencies:
   # FFI dependencies
   ffi: ^2.1.0
   path: ^1.8.3
-  nfc_manager: ^4.0.2
+  flutter_nfc_kit: ^3.6.0-rc.6
 
 dev_dependencies:
   flutter_test:

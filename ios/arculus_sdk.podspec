@@ -35,5 +35,5 @@ Arculus SDK plugin for integration into flutter projects
   
   # Ensure the library symbols are available for FFI
   s.libraries = 'c++'
-  s.frameworks = 'Foundation'
+  s.frameworks = 'Foundation', 'CoreNFC'
 end 

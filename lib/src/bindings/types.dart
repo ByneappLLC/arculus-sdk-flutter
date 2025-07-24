@@ -1,7 +1,6 @@
 /// Dart equivalents of CSDK types for type-safe usage
 library csdk_types;
 
-import 'dart:ffi';
 import 'dart:typed_data';
 
 /// Success return code

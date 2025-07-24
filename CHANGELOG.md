@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2024-01-XX
+
+### Changed
+- **BREAKING**: Switched from `nfc_manager` to `flutter_nfc_kit` for NFC communication
+- Updated NFC implementation to use real hardware wallet communication instead of mock responses
+- Added proper CSDK flow: Request → NFC → Response processing
+- Updated Android manifest with NFC permissions
+- Updated iOS configuration with CoreNFC framework and entitlements
+- Improved error handling for NFC operations
+
+### Added
+- Real NFC communication with Arculus hardware wallets
+- Complete CSDK integration with actual APDU command transmission
+- Proper session management and encrypted communication
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added

@@ -164,8 +164,20 @@
       "languageVersion": "3.7"
     },
     {
+      "name": "flutter_nfc_kit",
+      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/flutter_nfc_kit-3.6.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
       "name": "flutter_test",
       "rootUri": "file:///Users/edgar/Dev/flutter/packages/flutter_test",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "flutter_web_plugins",
+      "rootUri": "file:///Users/edgar/Dev/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -284,16 +296,10 @@
       "languageVersion": "3.2"
     },
     {
-      "name": "ndef_record",
-      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/ndef_record-1.2.1",
+      "name": "ndef",
+      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/ndef-0.3.4",
       "packageUri": "lib/",
-      "languageVersion": "3.7"
-    },
-    {
-      "name": "nfc_manager",
-      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/nfc_manager-4.0.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.7"
+      "languageVersion": "2.12"
     },
     {
       "name": "package_config",
@@ -356,6 +362,12 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "sprintf",
+      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/sprintf-7.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "stack_trace",
       "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/stack_trace-1.12.1",
       "packageUri": "lib/",
@@ -402,6 +414,12 @@
       "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/typed_data-1.4.0",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "uuid",
+      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/uuid-4.5.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "vector_math",

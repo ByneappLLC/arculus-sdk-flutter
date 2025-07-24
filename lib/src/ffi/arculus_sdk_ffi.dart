@@ -2,7 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:nfc_manager/nfc_manager.dart';
+import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:ffi/ffi.dart';
 
 import '../bindings/types.dart';
@@ -238,14 +238,15 @@ class ArculusSdkFFI extends ArculusSdkPlatform {
   /// Check NFC availability
   Future<bool> _checkNfcAvailability() async {
     try {
-      return await NfcManager.instance.isAvailable();
+      final status = await FlutterNfcKit.nfcAvailability;
+      return status == NFCAvailability.available;
     } catch (e) {
       return false;
     }
   }
 
   /// Execute wallet operation with proper CSDK flow
-  /// This demonstrates the real pattern: Request -> NFC Communication -> Response processing
+  /// This implements the real pattern: Request -> NFC Communication -> Response processing
   Future<Map<String, dynamic>> _executeWalletOperation<T>(
     Future<T> Function(Pointer<Void> wallet) operation,
   ) async {
@@ -265,25 +266,97 @@ class ArculusSdkFFI extends ArculusSdkPlatform {
         return _errorResult(-1, 'NFC not available on this device');
       }
 
-      // In a real implementation, you would:
-      // 1. Start NFC session: await NfcManager.instance.startSession(pollingOptions: {NfcPollingOption.iso14443}, ...)
-      // 2. Get IsoDep tag: final isoDep = IsoDep.from(tag) or platform-specific equivalent
-      // 3. Connect to card: await isoDep.connect()
-      // 4. Select wallet AID using _selectWalletAID
-      // 5. Initialize encrypted session using _initEncryptedSession
-      // 6. Execute the actual wallet operation
-      // 7. Close NFC session
+      // Start NFC polling session
+      await _startPolling();
 
-      // For demonstration, execute operation directly (would need real NFC for production)
-      final result = await operation(_walletContext!);
+      try {
+        // Select wallet AID and initialize encrypted session
+        await _selectWalletAID(walletAID2);
+        await _initEncryptedSession();
 
-      return _successResult({'data': result});
+        // Execute the actual wallet operation
+        final result = await operation(_walletContext!);
+
+        return _successResult({'data': result});
+      } finally {
+        // Always end NFC session
+        await _endPolling();
+      }
     } catch (e) {
       return _errorResult(-1, 'Wallet operation failed: $e');
     }
   }
 
-  /// Simulate wallet AID selection (real implementation would send via NFC)
+  /// Start NFC polling session
+  Future<NFCTag> _startPolling() async {
+    final status = await FlutterNfcKit.nfcAvailability;
+    if (status == NFCAvailability.available) {
+      final tag = await FlutterNfcKit.poll(
+        timeout: const Duration(seconds: 60),
+        iosMultipleTagMessage: "Multiple tags found",
+        iosAlertMessage: "Hold your phone near the card",
+        // Make sure we're enabling ISO 7816 / ISO 14443-4 (smart card) support
+        readIso14443A: true,
+        readIso14443B: true,
+        readIso15693: true,
+        readIso18092: true,
+      );
+      print("NFC tag found: ${tag.type}, ID: ${tag.id}");
+      print("NFC tag standard: ${tag.standard}");
+      print("NFC tag ATQA: ${tag.atqa}, SAK: ${tag.sak}");
+
+      return tag;
+    }
+    throw Exception('NFC not available');
+  }
+
+  /// End NFC polling session
+  Future<void> _endPolling() async {
+    await FlutterNfcKit.finish();
+  }
+
+  /// Send command via NFC and receive response
+  Future<Uint8List> _sendCommand(Uint8List command) async {
+    final apduStr = _uint8ListToHexString(command);
+    print("Sending command -->: $apduStr");
+    final res = await FlutterNfcKit.transceive(
+      _uint8ListToHexString(command),
+      timeout: const Duration(seconds: 5),
+    );
+
+    final response = _hexStringToUint8List(res);
+
+    final responseStr = _uint8ListToHexString(response);
+    print("Response <--: $responseStr");
+
+    if (response.length < 2 ||
+        response[response.length - 2] != 0x90 ||
+        response[response.length - 1] != 0x00) {
+      throw Exception("sendReceive bad status");
+    }
+
+    return response;
+  }
+
+  /// Convert Uint8List to hex string
+  String _uint8ListToHexString(Uint8List data) {
+    return data
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0').toUpperCase())
+        .join('');
+  }
+
+  /// Convert hex string to Uint8List
+  Uint8List _hexStringToUint8List(String hex) {
+    List<int> bytes = [];
+    for (int i = 0; i < hex.length; i += 2) {
+      if (i + 2 <= hex.length) {
+        bytes.add(int.parse(hex.substring(i, i + 2), radix: 16));
+      }
+    }
+    return Uint8List.fromList(bytes);
+  }
+
+  /// Select wallet AID (real implementation sends via NFC)
   Future<void> _selectWalletAID(Uint8List aid) async {
     final rLen = malloc<Size>();
 
@@ -300,19 +373,17 @@ class ArculusSdkFFI extends ArculusSdkPlatform {
         throw Exception('SelectWallet request failed');
       }
 
-      // In real implementation: send req.asTypedList(rLen.value) via NFC
-      // For now, simulate successful response
-      final mockResponse =
-          Uint8List.fromList([0x90, 0x00]); // Success status word
+      // Send request via NFC
+      final adpuCommand = req.cast<Uint8>().asTypedList(rLen.value);
+      final result = await _sendCommand(adpuCommand);
 
       final responseFunc = _walletSelectWalletResponse.asFunction<
           Pointer<Void> Function(Pointer<Void>, Pointer<Uint8>, int)>();
 
-      final resultPtr = malloc<Uint8>(mockResponse.length);
-      resultPtr.asTypedList(mockResponse.length).setAll(0, mockResponse);
+      final resultPtr = malloc<Uint8>(result.length);
+      resultPtr.asTypedList(result.length).setAll(0, result);
 
-      final response =
-          responseFunc(_walletContext!, resultPtr, mockResponse.length);
+      final response = responseFunc(_walletContext!, resultPtr, result.length);
       if (response == nullptr) {
         throw Exception('SelectWallet response failed');
       }
@@ -324,7 +395,7 @@ class ArculusSdkFFI extends ArculusSdkPlatform {
     }
   }
 
-  /// Simulate encrypted session initialization (real implementation would use NFC)
+  /// Initialize encrypted session (sends real NFC commands)
   Future<void> _initEncryptedSession() async {
     final rLen = malloc<Size>();
 
@@ -337,18 +408,18 @@ class ArculusSdkFFI extends ArculusSdkPlatform {
         throw Exception('InitEncryptedSession request failed');
       }
 
-      // In real implementation: send req.asTypedList(rLen.value) via NFC
-      // For now, simulate successful response
-      final mockResponse =
-          Uint8List.fromList([0x90, 0x00]); // Success status word
+      // Send request via NFC
+      final adpuCommand = req.cast<Uint8>().asTypedList(rLen.value);
+      print("Encrypting session: ${_uint8ListToHexString(adpuCommand)}");
+      final result = await _sendCommand(adpuCommand);
 
       final responseFunc = _walletInitSessionResponse
           .asFunction<int Function(Pointer<Void>, Pointer<Uint8>, int)>();
 
-      final resultPtr = malloc<Uint8>(mockResponse.length);
-      resultPtr.asTypedList(mockResponse.length).setAll(0, mockResponse);
+      final resultPtr = malloc<Uint8>(result.length);
+      resultPtr.asTypedList(result.length).setAll(0, result);
 
-      final rc = responseFunc(_walletContext!, resultPtr, mockResponse.length);
+      final rc = responseFunc(_walletContext!, resultPtr, result.length);
       if (rc != csdkOk) {
         throw Exception('InitEncryptedSession response failed with code: $rc');
       }
@@ -445,16 +516,54 @@ class ArculusSdkFFI extends ArculusSdkPlatform {
           throw Exception('GetPublicKey request failed');
         }
 
-        // In real implementation: send req.asTypedList(rLen.value) via NFC and process response
-        // For now, return mock data
-        final mockPubKey = List.generate(33, (i) => i + 1);
-        final mockChainCode = List.generate(32, (i) => i + 10);
+        // Send request via NFC and process response
+        final adpuCommand = req.cast<Uint8>().asTypedList(rLen.value);
+        final result = await _sendCommand(adpuCommand);
+
+        final extendedKeyFunc = _walletGetPublicKeyFromPathResponse.asFunction<
+            Pointer<Void> Function(Pointer<Void>, Pointer<Uint8>, int)>();
+
+        final resultPtr = malloc<Uint8>(result.length);
+        resultPtr.asTypedList(result.length).setAll(0, result);
+
+        final extendedKey = extendedKeyFunc(wallet, resultPtr, result.length);
+        if (extendedKey == nullptr) {
+          throw Exception('Failed to get extended key');
+        }
+
+        // Extract public key
+        final pubKeyLen = malloc<Size>();
+        final pubKey = _extendedKeyGetPubKey.asFunction<
+            Pointer<Uint8> Function(
+                Pointer<Void>, Pointer<Size>)>()(extendedKey, pubKeyLen);
+
+        if (pubKey == nullptr) {
+          throw Exception('Failed to get public key');
+        }
+
+        // Extract chain code
+        final chainCodeLen = malloc<Size>();
+        final chainCode = _extendedKeyGetChainCode.asFunction<
+            Pointer<Uint8> Function(
+                Pointer<Void>, Pointer<Size>)>()(extendedKey, chainCodeLen);
+
+        if (chainCode == nullptr) {
+          throw Exception('Failed to get chain code');
+        }
+
+        final pubKeyBytes =
+            pubKey.cast<Uint8>().asTypedList(pubKeyLen.value).toList();
+        final chainCodeBytes =
+            chainCode.cast<Uint8>().asTypedList(chainCodeLen.value).toList();
 
         malloc.free(pathPtr);
+        malloc.free(resultPtr);
+        malloc.free(pubKeyLen);
+        malloc.free(chainCodeLen);
 
         return {
-          'publicKey': mockPubKey,
-          'chainCode': mockChainCode,
+          'publicKey': pubKeyBytes,
+          'chainCode': chainCodeBytes,
           'derivationPath': derivationPath,
           'curve': curve,
         };
