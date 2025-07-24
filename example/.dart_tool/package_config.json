@@ -284,6 +284,18 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "ndef_record",
+      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/ndef_record-1.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "nfc_manager",
+      "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/nfc_manager-4.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
       "name": "package_config",
       "rootUri": "file:///Users/edgar/.pub-cache/hosted/pub.dev/package_config-2.2.0",
       "packageUri": "lib/",

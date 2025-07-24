@@ -18,10 +18,22 @@ Arculus SDK plugin for integration into flutter projects
   s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.pod_target_xcconfig = { 
+    'DEFINES_MODULE' => 'YES', 
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+    # Force all symbols to be included for FFI access
+    'OTHER_LDFLAGS' => '-all_load'
+  }
+  s.user_target_xcconfig = {
+    # Ensure symbols are available in the main app target for FFI
+    'OTHER_LDFLAGS' => '-all_load'
+  }
   s.swift_version = '5.0'
   
   # Add the Arculus CSDK XCFramework
   s.vendored_frameworks = 'CSDK.xcframework'
-  s.source_files = 'Classes/**/*'
+  
+  # Ensure the library symbols are available for FFI
+  s.libraries = 'c++'
+  s.frameworks = 'Foundation'
 end 

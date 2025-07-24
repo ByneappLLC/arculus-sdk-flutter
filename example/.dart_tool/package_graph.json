@@ -52,6 +52,7 @@
         "freezed",
         "freezed_annotation",
         "json_annotation",
+        "nfc_manager",
         "path"
       ]
     },
@@ -226,6 +227,19 @@
       ]
     },
     {
+      "name": "nfc_manager",
+      "version": "4.0.2",
+      "dependencies": [
+        "flutter",
+        "ndef_record"
+      ]
+    },
+    {
+      "name": "ffi",
+      "version": "2.1.4",
+      "dependencies": []
+    },
+    {
       "name": "freezed_annotation",
       "version": "2.4.4",
       "dependencies": [
@@ -267,6 +281,13 @@
       "name": "sky_engine",
       "version": "0.0.0",
       "dependencies": []
+    },
+    {
+      "name": "ndef_record",
+      "version": "1.2.1",
+      "dependencies": [
+        "collection"
+      ]
     },
     {
       "name": "dart_style",
@@ -710,11 +731,6 @@
         "string_scanner",
         "typed_data"
       ]
-    },
-    {
-      "name": "ffi",
-      "version": "2.1.4",
-      "dependencies": []
     }
   ],
   "configVersion": 1

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter/services.dart';
 import 'package:arculus_sdk/arculus_sdk.dart';
 
 void main() {
@@ -13,17 +16,86 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final ArculusSdk _arculusSdk = ArculusSdk();
-  String _statusText = 'Ready';
-  bool _sessionInitialized = false;
+  String _platformVersion = 'Unknown';
+  String _statusMessage = 'Ready';
+  final _arculusSdk = ArculusSdk();
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initPlatformState();
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformState() async {
+    String platformVersion;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    // We also handle the message potentially returning null.
+    try {
+      await ArculusSdk.initialize();
+      _isInitialized = true;
+      platformVersion =
+          await _arculusSdk.getPlatformVersion() ?? 'Unknown platform version';
+      setState(() {
+        _statusMessage = 'SDK Initialized';
+      });
+    } on PlatformException catch (e) {
+      platformVersion = 'Failed to get platform version: ${e.message}';
+      setState(() {
+        _statusMessage = 'Initialization failed: ${e.message}';
+      });
+    } catch (e) {
+      platformVersion = 'Failed to get platform version: $e';
+      setState(() {
+        _statusMessage = 'Initialization failed: $e';
+      });
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _platformVersion = platformVersion;
+    });
+  }
+
+  Future<void> _initSession() async {
+    if (!_isInitialized) {
+      setState(() {
+        _statusMessage = 'SDK not initialized';
+      });
+      return;
+    }
+
+    setState(() {
+      _statusMessage = 'Initializing session...';
+    });
+
+    try {
+      final result = await _arculusSdk.initSession();
+      if (result.isSuccess) {
+        setState(() {
+          _statusMessage = 'Session initialized successfully';
+        });
+      } else {
+        setState(() {
+          _statusMessage =
+              'Session initialization failed: ${result.error?.message ?? 'Unknown error'}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Session initialization crashed: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Arculus SDK Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Arculus SDK Example'),
@@ -33,176 +105,61 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Status',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(_statusText),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+              Text('Running on: $_platformVersion\n'),
+              Text('Status: $_statusMessage\n'),
+              const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _initSession,
+                onPressed: _isInitialized ? _initSession : null,
                 child: const Text('Initialize Session'),
               ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: _sessionInitialized ? _createWallet : null,
-                child: const Text('Create Wallet'),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: _sessionInitialized ? _getPublicKey : null,
-                child: const Text('Get Public Key'),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: _sessionInitialized ? _getFirmwareVersion : null,
-                child: const Text('Get Firmware Version'),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: _sessionInitialized ? _getGGUID : null,
-                child: const Text('Get GGUID'),
-              ),
+              const SizedBox(height: 20),
+              if (_isInitialized) ...[
+                ElevatedButton(
+                  onPressed: () async {
+                    setState(() {
+                      _statusMessage = 'Getting firmware version...';
+                    });
+                    try {
+                      final result = await _arculusSdk.getFirmwareVersion();
+                      setState(() {
+                        _statusMessage = result.isSuccess
+                            ? 'Firmware version: ${result.data}'
+                            : 'Failed to get firmware version: ${result.error?.message}';
+                      });
+                    } catch (e) {
+                      setState(() {
+                        _statusMessage = 'Get firmware version crashed: $e';
+                      });
+                    }
+                  },
+                  child: const Text('Get Firmware Version'),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    setState(() {
+                      _statusMessage = 'Getting GGUID...';
+                    });
+                    try {
+                      final result = await _arculusSdk.getGGUID();
+                      setState(() {
+                        _statusMessage = result.isSuccess
+                            ? 'GGUID: ${result.data}'
+                            : 'Failed to get GGUID: ${result.error?.message}';
+                      });
+                    } catch (e) {
+                      setState(() {
+                        _statusMessage = 'Get GGUID crashed: $e';
+                      });
+                    }
+                  },
+                  child: const Text('Get GGUID'),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _initSession() async {
-    setState(() {
-      _statusText = 'Initializing session...';
-    });
-
-    try {
-      final result = await _arculusSdk.initSession();
-      if (result.isSuccess) {
-        setState(() {
-          _statusText = 'Session initialized successfully';
-          _sessionInitialized = true;
-        });
-      } else {
-        setState(() {
-          _statusText = 'Failed to initialize session: ${result.error}';
-          _sessionInitialized = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _statusText = 'Error: $e';
-        _sessionInitialized = false;
-      });
-    }
-  }
-
-  Future<void> _createWallet() async {
-    setState(() {
-      _statusText = 'Creating wallet...';
-    });
-
-    try {
-      final result = await _arculusSdk.createWallet(numberOfWords: 12);
-      if (result.isSuccess) {
-        final walletResult = result.value;
-        setState(() {
-          _statusText =
-              'Wallet created!\nMnemonic: ${walletResult.mnemonic.substring(0, 50)}...';
-        });
-      } else {
-        setState(() {
-          _statusText = 'Failed to create wallet: ${result.error}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _statusText = 'Error: $e';
-      });
-    }
-  }
-
-  Future<void> _getPublicKey() async {
-    setState(() {
-      _statusText = 'Getting public key...';
-    });
-
-    try {
-      final result = await _arculusSdk.getPublicKey(
-        "m/44'/60'/0'/0/0",
-        curve: CryptoCurve.secp256k1,
-      );
-      if (result.isSuccess) {
-        final extendedKey = result.value;
-        setState(() {
-          _statusText =
-              'Public key retrieved!\nKey: ${extendedKey.publicKey.substring(0, 20)}...';
-        });
-      } else {
-        setState(() {
-          _statusText = 'Failed to get public key: ${result.error}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _statusText = 'Error: $e';
-      });
-    }
-  }
-
-  Future<void> _getFirmwareVersion() async {
-    setState(() {
-      _statusText = 'Getting firmware version...';
-    });
-
-    try {
-      final result = await _arculusSdk.getFirmwareVersion();
-      if (result.isSuccess) {
-        setState(() {
-          _statusText = 'Firmware version: ${result.value}';
-        });
-      } else {
-        setState(() {
-          _statusText = 'Failed to get firmware version: ${result.error}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _statusText = 'Error: $e';
-      });
-    }
-  }
-
-  Future<void> _getGGUID() async {
-    setState(() {
-      _statusText = 'Getting GGUID...';
-    });
-
-    try {
-      final result = await _arculusSdk.getGGUID();
-      if (result.isSuccess) {
-        setState(() {
-          _statusText = 'GGUID: ${result.value}';
-        });
-      } else {
-        setState(() {
-          _statusText = 'Failed to get GGUID: ${result.error}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _statusText = 'Error: $e';
-      });
-    }
   }
 }
